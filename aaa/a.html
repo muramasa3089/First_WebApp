@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>My Text Saver</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+      }
+      header {
+        background-color: #333;
+        color: #fff;
+        padding: 1rem;
+        text-align: center;
+      }
+      h1 {
+        margin: 0;
+      }
+      .container {
+        max-width: 800px;
+        margin: auto;
+        padding: 1rem;
+      }
+      form {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+      label {
+        display: block;
+        margin-bottom: 0.5rem;
+      }
+      input[type="text"],
+      select {
+        width: 100%;
+        padding: 0.5rem;
+        margin-bottom: 1rem;
+        border: 2px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+      button {
+        background-color: #333;
+        color: #fff;
+        padding: 0.5rem;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+      }
+      button:hover {
+        background-color: #555;
+      }
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        margin-top: 1rem;
+      }
+      th, td {
+        text-align: left;
+        padding: 0.5rem;
+        border-bottom: 1px solid #ccc;
+      }
+      th {
+        background-color: #333;
+        color: #fff;
+      }
+      .error {
+        color: red;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <h1>My Text Saver</h1>
+    </header>
+    <div class="container">
+      <form>
+        <div>
+          <label for="text-input">Text</label>
+          <input type="text" id="text-input">
+        </div>
+        <div>
+          <label for="category-select">Category</label>
+          <select id="category-select">
+            <option value="">Select a category</option>
+            <option value="desk">Desk</option>
+            <option value="shelf">Shelf</option>
+            <option value="bag">Bag</option>
+          </select>
+        </div>
+        <button type="button" id="save-button">Save</button>
+        <div>
+          <label for="search-input">Search</label>
+          <input type="text" id="search-input">
+          <button type="button" id="search-button">Search</button>
+        </div>
+      </form>
+      <table id="saved-texts-table">
+        <thead>
+          <tr>
+            <th>Text</th>
+            <th>Category</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+        </tbody>
+      </table>
+      <p class="error" id="error-message"></p>
+    </div>
+
+<script>
+    const saveButton = document.getElementById("save-button");
+    const searchButton = document.getElementById("search-button");
+    const searchInput = document.getElementById("search-input");
+    const savedTextsTableBody = document.getElementById("saved-texts-table-body");
+
+    let savedTexts = getSavedTexts();
+
+    // Display saved texts on page load
+    displaySavedTexts();
+
+    // Save text when save button is clicked
+    saveButton.addEventListener("click", () => {
+      const textInput = document.getElementById("text-input");
+      const categorySelect = document.getElementById("category-select");
+      const text = textInput.value.trim();
+      const category = categorySelect.value;
+      if (text === "") {
+        showError("Please enter some text.");
+      } else if (category === "") {
+        showError("Please select a category.");
+      } else {
+        saveText(text, category);
+        displaySavedTexts();
+        textInput.value = "";
+        categorySelect.value = "";
+        showError("");
+      }
+    });
+
+    // Search saved texts when search button is clicked
+    searchButton.addEventListener("click", () => {
+      const searchText = searchInput.value.trim().toLowerCase();
+      if (searchText === "") {
+        displaySavedTexts();
+      } else {
+        const filteredTexts = savedTexts.filter(text => {
+          return text.text.toLowerCase().includes(searchText) || text.category.toLowerCase().includes(searchText);
+        });
+        displaySavedTexts(filteredTexts);//これよ
+      }
+    });
+
+    // Save text to local storage
+    function saveText(text, category) {
+      const savedText = {
+        id: Date.now(),
+        text: text,
+        category: category
+      };
+      let savedTexts = getSavedTexts();
+      savedTexts.push(savedText);
+      localStorage.setItem("savedTexts", JSON.stringify(savedTexts));
+    }
+
+    // Get saved texts from local storage
+    function getSavedTexts() {
+      let savedTexts = JSON.parse(localStorage.getItem("savedTexts"));
+      if (savedTexts === null) {
+        savedTexts = [];
+      }
+      return savedTexts;
+    }
+
+    // Display saved texts in table
+    function displaySavedTexts(texts = []) {
+      savedTextsTableBody.innerHTML = "";
+      if (texts.length === 0) {
+        texts = getSavedTexts();
+      }
+      texts.forEach(text => {
+        const row = document.createElement("tr");
+        const textCell = document.createElement("td");
+        const categoryCell = document.createElement("td");
+        const actionsCell = document.createElement("td");
+        const deleteButton = document.createElement("button");
+        textCell.textContent = text.text;
+        categoryCell.textContent = text.category;
+        deleteButton.textContent = "Delete";
+        deleteButton.setAttribute("data-id", text.id);
+        deleteButton.addEventListener("click", () => {
+          deleteText(text.id);
+          displaySavedTexts();
+        });
+        actionsCell.appendChild(deleteButton);
+        row.appendChild(textCell);
+        row.appendChild(categoryCell);
+        row.appendChild(actionsCell);
+        savedTextsTableBody.appendChild(row);
+      });
+    }
+
+    // Delete text from local storage
+    function deleteText(id) {
+      let savedTexts = getSavedTexts();
+      savedTexts = savedTexts.filter(text => {
+        return text.id !== id;
+      });
+      localStorage.setItem("savedTexts", JSON.stringify(savedTexts));
+    }
+
+    // Show error message
+    function showError(message) {
+      const errorMessage = document.getElementById("error-message");
+      errorMessage.textContent = message;
+    }
+  </script>
+ </body>
+</html>

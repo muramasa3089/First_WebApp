@@ -2,7 +2,7 @@
 <html>
   <head>
     <title>My Text Saver</title>
-	<h1>haha</h1>
+	
     <style>
       body {
         font-family: Arial, sans-serif;
@@ -152,6 +152,7 @@
 		<div class="search-section">
 		  <input type="text" id="search-input" placeholder="Search text or category" />
 		  <button id="search-button">Search</button>
+		  <button id="back-button">back</button>
 		</div>
 	  
 		<ul id="saved-texts-list">
@@ -159,6 +160,8 @@
 	  
 		<p id="no-results" class="no-results" style="display:none;">No results found.</p>
 	  </div>
+
+	  
 	  
 	  <script>
 		const savedTextsList = document.getElementById("saved-texts-list");
@@ -168,6 +171,7 @@
 		const searchInput = document.getElementById("search-input");
 		const searchButton = document.getElementById("search-button");
 		const noResults = document.getElementById("no-results");
+		const backButton = document.getElementById("back-button");//バック
 	  
 		// save text and category to local storage
 		function saveText() {
@@ -192,6 +196,8 @@
 		  textInput.value = "";
 		  categoryInput.value = "none";
 		}
+
+		
 	  
 		// display saved texts in the list
 		function displaySavedTexts() {
@@ -231,6 +237,35 @@
 			noResults.style.display = "block";
 		  }
 		}
+
+		// display saved texts in the list
+		function displaySavedTexts_search(text_s) {
+		//savedTextsListのinnerHTMLを空にすることで、リストのクリアを行います。
+		  savedTextsList.innerHTML = "";//ここではsave-text-listという場所にいれる
+		//"savedTexts"というローカルストレージキーから保存されたテキストを取得し、JSON.parseメソッドを使って配列に変換します。ローカルストレージに保存されていない場合は、空の配列を代入します。
+		//  let savedTexts = JSON.parse(localStorage.getItem("savedTexts")) || [];
+		//savedTexts配列の長さが0より大きい場合、保存されたテキストを表示します。それ以外の場合は、"No results found"というメッセージを表示します。
+		  if (text_s.length > 0) {
+			//savedTexts配列内の各項目に対して、以下の処理を実行します。
+			text_s.forEach((text_s, index) => {//ループ処理。例えばsavetext={'えんぴつ','消しゴム'}の場合、一回目のループはsavetext='えんぴつ',index=0となり、二回目は自明です
+				//新しいli要素を作成します。
+			  const listItem = document.createElement("li");
+			  //テンプレート文字列を使用して、li要素内にHTMLを設定します。このHTMLには、保存されたテキストとそのカテゴリーが表示されます。また、削除ボタンを含むHTMLが生成されます。
+			  listItem.innerHTML = `
+				<span>${text_s.text}</span>
+				<span>${text_s.category}</span>
+				
+			  `;
+				//生成されたli要素をsavedTextsListに追加します。
+			  savedTextsList.appendChild(listItem);
+				
+			});
+	  
+			noResults.style.display = "none";
+		  } else {
+			noResults.style.display = "block";
+		  }
+		}
 	  
 		// search saved texts by text or category
 		function searchSavedTexts() {
@@ -242,9 +277,9 @@
 			  savedText.text.toLowerCase().includes(searchText) ||
 			  savedText.category.toLowerCase().includes(searchText)
 		  );
-	  
+		  console.log(savedTexts);
 		  if (savedTexts.length > 0) {
-			displaySavedTexts();
+			displaySavedTexts_search(savedTexts);
 		  } else {
 			noResults.style.display = "block";
 			savedTextsList.innerHTML = "";
@@ -257,6 +292,8 @@
 		// event listener for search button
 		searchButton.addEventListener("click", searchSavedTexts);
 		
+		backButton.addEventListener("click", displaySavedTexts);//back
+
 		// display all saved texts on page load
 		displaySavedTexts();
 
